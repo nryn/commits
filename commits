@@ -57,7 +57,7 @@ eval set -- "${PARAMS}"
 
 if [[ ${SHOW_HELP} ]]
 then
-  echo -e "\nA tool to search karma commits and co-authors.\n\nUsage: commits [options]\nOptions:\n\n\t-a, --all\n\t\tInclude all commits, rather than the default of 6 weeks.\n\t-s, --search <string>\n\t\tFilter results to match on the given string. Cannot be used with the --authors flag.\n\t-t, --types\n\t\tShow a table of karma commit type usage.\n\t-u, --authors\n\t\tShow a list of co-authors/contributors. Cannot be used with the -t | --type flag.\n\t\t-p, --prefix\n\t\t\tIn conjunction with the -u | --authors flag, print authors with a "Co-authored-by:" prefix.\n\t-c, --count\n\t\tPrints results with usage counts. Can by used with -u | --authors, but -c | --counts will override usage of the -p | --prefix flag.\n"
+  echo -e "\nA tool to search karma commits and co-authors.\n\nUsage: commits [options]\nOptions:\n\n\t-a, --all\n\t\tInclude all commits, rather than the default of 6 weeks.\n\t-s, --search <string>\n\t\tFilter results to match on the given string. Cannot be used with the --authors flag.\n\t-t, --types\n\t\tShow a table of karma commit type usage.\n\t-u, --authors\n\t\tShow a list of co-authors/contributors. Cannot be used with the -t | --type flag.\n\t\t-p, --prefix\n\t\t\tIn conjunction with the -u | --authors flag, print authors with a \"Co-authored-by:\" prefix.\n\t-c, --count\n\n\t\tPrints results with usage counts. Will override usage of the -p | --prefix flag when used alongside -u | --authors.\n"
   exit
 fi
 
@@ -92,7 +92,7 @@ then
   exit
 elif [[ ${SHOW_AUTHORS} ]]
 then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | awk '!x[$0]++' 
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | awk '!x[$0]++'
   exit
 fi
 
