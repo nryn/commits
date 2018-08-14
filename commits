@@ -1,0 +1,134 @@
+#!/bin/bash
+
+set -e
+
+PARAMS=""
+
+while (( "$#" )); do
+  case "$1" in
+    -a|--all)
+      SHOW_ALL=true
+      shift
+      ;;
+    -s|--search)
+      SEARCH_TERM=$2
+      shift 2
+      ;;
+    -t|--type)
+      SHOW_TYPE=true
+      shift
+      ;;
+    -c|--count)
+      SHOW_COUNT=true
+      shift
+      ;;
+    -u|--authors)
+      SHOW_AUTHORS=true
+      shift
+      ;;
+    -h|--help)
+      SHOW_HELP=true
+      shift
+      ;;
+    -p|--prefix)
+      PREFIX=true
+      shift
+      ;;
+    --pls)
+      POLITE=true
+      shift
+      ;;
+    --) # end argument parsing
+      shift
+      break
+      ;;
+    -*|--*=) # unsupported flags
+      echo "Error: Unsupported flag ${1}" >&2
+      exit 1
+      ;;
+    *) # preserve positional arguments
+      PARAMS="${PARAMS} $1"
+      shift
+      ;;
+  esac
+done
+# set positional arguments in their proper place
+eval set -- "${PARAMS}"
+
+if [[ ${SHOW_HELP} ]]
+then
+  echo -e "\nA tool to search karma commits and co-authors.\n\nUsage: commits [options]\nOptions:\n\n\t-a, --all\n\t\tInclude all commits, rather than the default of 6 weeks.\n\t-s, --search <string>\n\t\tFilter results to match on the given string. Cannot be used with the --authors flag.\n\t-t, --types\n\t\tShow a table of karma commit type usage.\n\t-u, --authors\n\t\tShow a list of co-authors/contributors. Cannot be used with the -t | --type flag.\n\t\t-p, --prefix\n\t\t\tIn conjunction with the -u | --authors flag, print authors with a "Co-authored-by:" prefix.\n\t-c, --count\n\t\tPrints results with usage counts. Can by used with -u | --authors, but -c | --counts will override usage of the -p | --prefix flag.\n"
+  exit
+fi
+
+KERNEL_INFO=$(uname -a)
+
+if [[ -n $(echo ${KERNEL_INFO} | grep -e '^Darwin') ]]
+then
+  GNU_COMMAND_PREFIX='g'
+fi
+
+if [[ ${SHOW_ALL} ]]
+then
+  DATE_SINCE='1970-01-01'
+else
+  DATE_SINCE=$(${GNU_COMMAND_PREFIX}date --date='00:00 42 days ago' +%F)
+fi
+
+if [[ ${SHOW_TYPE} ]]
+then
+  CAPTURE_GROUP='\1'
+else
+  CAPTURE_GROUP='\2'
+fi
+
+if [[ ${SHOW_AUTHORS} && ${SHOW_COUNT} ]]
+then
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | sort | uniq -c | sort -nr
+  exit
+elif [[ ${SHOW_AUTHORS} && ${PREFIX} ]]
+then
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | awk '!x[$0]++' | ${GNU_COMMAND_PREFIX}sed -r "s/^\s*//"
+  exit
+elif [[ ${SHOW_AUTHORS} ]]
+then
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | awk '!x[$0]++' 
+  exit
+fi
+
+query_git_logs () {
+  git log --oneline --since=${DATE_SINCE} | grep -o -E '^[A-Za-z0-9]+\s+[A-Za-z]+\([A-Za-z0-9\ \-]+\)\:\s*' | ${GNU_COMMAND_PREFIX}sed -r "s/^[A-Za-z0-9]+\s+([A-Za-z0-9\ ]+)\(([A-Za-z0-9\ \-]+)\)\:/${CAPTURE_GROUP}/"
+}
+
+get_sorted_by_recent () {
+  query_git_logs | awk '!x[$0]++'
+}
+
+get_count_by_popular () {
+  query_git_logs | sort | uniq -c | sort -nr
+}
+
+get_relevant_commit_data () {
+  if [[ ${SHOW_COUNT} ]]
+  then
+    get_count_by_popular
+  else
+    get_sorted_by_recent
+  fi
+}
+
+if [[ -n ${SEARCH_TERM} ]]
+then
+  get_relevant_commit_data | grep ${SEARCH_TERM}
+else
+  get_relevant_commit_data
+fi
+
+if [[ ${POLITE} ]]
+then
+  sleep 1
+  printf '...'
+  sleep 1
+  echo "you're welcome."
+  sleep 1
+fi
