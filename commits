@@ -87,17 +87,25 @@ else
   CAPTURE_GROUP='\2'
 fi
 
+function check_for_flag_in_search_term {
+if [[ ${SEARCH_TERM} = *"-"* ]]; then
+  SEARCH_TERM=""
+fi
+}
+
+check_for_flag_in_search_term
+
 if [[ ${SHOW_AUTHORS} && ${SHOW_COUNT} ]]
 then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | sort | uniq -c | sort -nr | grep -i ${SEARCH_TERM}
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | sort | uniq -c | sort -nr | grep -i "${SEARCH_TERM}"
   exit
 elif [[ ${SHOW_AUTHORS} && ${PREFIX} ]]
 then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | awk '!x[$0]++' | ${GNU_COMMAND_PREFIX}sed -r "s/^\s*//" | ${SORTED} | grep  -i ${SEARCH_TERM}
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | awk '!x[$0]++' | ${GNU_COMMAND_PREFIX}sed -r "s/^\s*//" | ${SORTED} | grep  -i "${SEARCH_TERM}"
   exit
 elif [[ ${SHOW_AUTHORS} ]]
 then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | awk '!x[$0]++' | ${SORTED} | grep -i ${SEARCH_TERM}
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | awk '!x[$0]++' | ${SORTED} | grep -i "${SEARCH_TERM}"
   exit
 fi
 
