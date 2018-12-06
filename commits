@@ -72,7 +72,10 @@ if [[ ${SHOW_ALL} ]]
 then
   DATE_SINCE='1970-01-01'
 else
-  DATE_SINCE=$(${GNU_COMMAND_PREFIX}date --date='00:00 42 days ago' +%F)
+  FORTY_TWO_DAYS_IN_SECONDS=$(($(date +%s)-$(${GNU_COMMAND_PREFIX}date +%s --date "42 days ago")))
+  MOST_RECENT_COMMIT_DATE=$(git log -1 --date=short --pretty=format:%cd)
+  MOST_RECENT_COMMIT_TIMESTAMP=$(${GNU_COMMAND_PREFIX}date --date "${MOST_RECENT_COMMIT_DATE}" +%s)
+  DATE_SINCE=$(${GNU_COMMAND_PREFIX}date --date=@$((${MOST_RECENT_COMMIT_TIMESTAMP}-${FORTY_TWO_DAYS_IN_SECONDS})) +%F)
 fi
 
 if [[ ${SHOW_TYPE} ]]
