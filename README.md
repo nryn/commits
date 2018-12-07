@@ -4,7 +4,7 @@
 
 commits is a command line tool for searching through 'karma' semantic commit messages and co-authors.
 
-It can be used to display the scopes and types of recent (the last 6 weeks) commits, as well as co-authors who worked/paired/mobbed on the commits, and can count these things.
+It can be used to display the scopes and types of the most recent commits, as well as co-authors who worked/paired/mobbed on the commits, and can count these things.
 
 ## Installation
 
