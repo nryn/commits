@@ -94,6 +94,13 @@ else
   CAPTURE_GROUP='\2'
 fi
 
+if [[ ${SORTED} ]]
+then
+  SORT_SUFFIX="sort"
+else
+  SORT_SUFFIX="cat"
+fi
+
 if [[ ${SHOW_AUTHORS} ]]
 then
   if [[ ${SHOW_COUNT} ]]
@@ -109,12 +116,6 @@ then
     SECOND_COMMAND='awk ''!x[$0]++'''
   fi
 
-  if [[ ${SORTED} ]]
-  then
-    SORT_SUFFIX="sort"
-  else
-    SORT_SUFFIX="cat"
-  fi
   git log --since=${DATE_SINCE} | grep Co-authored-by: | ${FIRST_COMMAND} | ${SECOND_COMMAND} | ${SORT_SUFFIX} | grep -i "${SEARCH_TERM}"
   exit
 fi
@@ -132,12 +133,6 @@ get_count_by_popular () {
 }
 
 get_relevant_commit_data () {
-  if [[ ${SORTED} ]]
-  then
-    SORT_SUFFIX="sort"
-  else
-    SORT_SUFFIX="cat"
-  fi
   if [[ ${SHOW_COUNT} ]]
   then
     get_count_by_popular
