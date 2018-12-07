@@ -31,10 +31,6 @@ while (( "$#" )); do
       SHOW_AUTHORS=true
       shift
       ;;
-    -b|--sorted)
-      SORTED=sort
-      shift
-      ;;
     -h|--help)
       SHOW_HELP=true
       shift
@@ -93,17 +89,6 @@ fi
 
 if [[ ${SHOW_AUTHORS} ]]
 then
-<<<<<<< Updated upstream
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | sort | uniq -c | sort -nr
-  exit
-elif [[ ${SHOW_AUTHORS} && ${PREFIX} ]]
-then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | awk '!x[$0]++' | ${GNU_COMMAND_PREFIX}sed -r "s/^\s*//" | ${SORTED}
-  exit
-elif [[ ${SHOW_AUTHORS} ]]
-then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | awk '!x[$0]++' | ${SORTED}
-=======
   if [[ ${SHOW_COUNT} ]]
   then
     git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  's/^\s*Co\-authored\-by\:\s*(.*)/\1/' | sort | uniq -c | sort -nr
@@ -124,7 +109,6 @@ then
     SORT_SUFFIX="cat"
   fi
   git log --since=${DATE_SINCE} | grep Co-authored-by: | ${FIRST_COMMAND} | ${SECOND_COMMAND} | ${SORT_SUFFIX}
->>>>>>> Stashed changes
   exit
 fi
 
