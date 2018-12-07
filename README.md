@@ -23,17 +23,20 @@ Without arguments, `commits` will show you the most recent unique scopes of comm
 ```
 $ commits
 help 
+alphabetical-sorting 
+sort-authors 
 readme 
-commits-script 
+commits-script
 ```
 
 You can ask for the types of commits, and for a count to be displayed:
 
 ```
 $ commits --type --count
-   2 docs
+   5 feat 
    2 refactor 
-   1 feat  
+   2 docs 
+   1 chore  
 ```
 
 Other usage instructions can be accessed by using the `-h | --help` flag.
@@ -49,7 +52,7 @@ Options:
 	-a, --all
 		Include all commits, rather than the default of 6 weeks.
 	-s, --search <string>
-		Filter results to match on the given string. Cannot be used with the --authors flag.
+		Filter results to match on the given string. Cannot be used with the -u | --authors flag.
 	-t, --types
 		Show a table of karma commit type usage.
 	-u, --authors
@@ -58,6 +61,8 @@ Options:
 		May only be used in conjunction with the -u | --authors flag. Will print authors with a "Co-authored-by:" prefix.
 	-c, --count
 		Prints results with usage counts. Will override usage of the -p | --prefix flag when used alongside -u | --authors.
+	-az, --sort
+		Alphabetically sort results. Without this, the results are sorted by the most recent, descending.
 ```
 
 ## What's a "Karma commit"?

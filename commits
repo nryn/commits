@@ -3,7 +3,6 @@
 set -e
 
 PARAMS=""
-SORTED=cat
 
 while (( "$#" )); do
   case "$1" in
@@ -12,8 +11,13 @@ while (( "$#" )); do
       shift
       ;;
     -s|--search)
-      SEARCH_TERM=$2
-      shift 2
+      if [[ ${2} = "-"* ]]; then
+        SEARCH_TERM=""
+        shift 1
+      else
+        SEARCH_TERM=$2
+        shift 2
+      fi
       ;;
     -t|--type)
       SHOW_TYPE=true
@@ -23,12 +27,12 @@ while (( "$#" )); do
       SHOW_COUNT=true
       shift
       ;;
-    -u|--authors)
-      SHOW_AUTHORS=true
+    -az|--sort)
+      SORTED=true
       shift
       ;;
-    -b|--sorted)
-      SORTED=sort
+    -u|--authors)
+      SHOW_AUTHORS=true
       shift
       ;;
     -h|--help)
@@ -62,7 +66,7 @@ eval set -- "${PARAMS}"
 
 if [[ ${SHOW_HELP} ]]
 then
-  echo -e "\nA tool to search karma commits and co-authors.\n\nUsage: commits [options]\nOptions:\n\n\t-a, --all\n\t\tInclude all commits, rather than the default of 6 weeks.\n\t-s, --search <string>\n\t\tFilter results to match on the given string. Cannot be used with the -u | --authors flag.\n\t-t, --types\n\t\tShow a table of karma commit type usage.\n\t-u, --authors\n\t\tShow a list of co-authors/contributors. Cannot be used with the -t | --type flag.\n\t-p, --prefix\n\t\tMay only be used in conjunction with the -u | --authors flag. Will print authors with a \"Co-authored-by:\" prefix.\n\t-c, --count\n\t\tPrints results with usage counts. Will override usage of the -p | --prefix flag when used alongside -u | --authors.\n"
+  echo -e "\nA tool to search karma commits and co-authors.\n\nUsage: commits [options]\nOptions:\n\n\t-a, --all\n\t\tInclude all commits, rather than the default of 6 weeks.\n\t-s, --search <string>\n\t\tFilter results to match on the given string. Cannot be used with the -u | --authors flag.\n\t-t, --types\n\t\tShow a table of karma commit type usage.\n\t-u, --authors\n\t\tShow a list of co-authors/contributors. Cannot be used with the -t | --type flag.\n\t-p, --prefix\n\t\tMay only be used in conjunction with the -u | --authors flag. Will print authors with a \"Co-authored-by:\" prefix.\n\t-c, --count\n\t\tPrints results with usage counts. Will override usage of the -p | --prefix flag when used alongside -u | --authors.\n\t-az, --sort\n\t\tAlphabetically sort results. Without this the results are sorted by the most recent, descending.\n"
   exit
 fi
 
@@ -87,25 +91,28 @@ else
   CAPTURE_GROUP='\2'
 fi
 
-function check_for_flag_in_search_term {
-if [[ ${SEARCH_TERM} = *"-"* ]]; then
-  SEARCH_TERM=""
-fi
-}
+if [[ ${SHOW_AUTHORS} ]]
+then
+  if [[ ${SHOW_COUNT} ]]
+  then
+    git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  's/^\s*Co\-authored\-by\:\s*(.*)/\1/' | sort | uniq -c | sort -nr
+    exit
+  elif [[ ${PREFIX} ]]
+  then
+    FIRST_COMMAND='awk ''!x[$0]++'''
+    SECOND_COMMAND="${GNU_COMMAND_PREFIX}sed -r s/^\s*//"
+  else
+    FIRST_COMMAND="${GNU_COMMAND_PREFIX}sed -r  s/^\s*Co\-authored\-by\:\s*(.*)/\1/"
+    SECOND_COMMAND='awk ''!x[$0]++'''
+  fi
 
-check_for_flag_in_search_term
-
-if [[ ${SHOW_AUTHORS} && ${SHOW_COUNT} ]]
-then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | sort | uniq -c | sort -nr | grep -i "${SEARCH_TERM}"
-  exit
-elif [[ ${SHOW_AUTHORS} && ${PREFIX} ]]
-then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | awk '!x[$0]++' | ${GNU_COMMAND_PREFIX}sed -r "s/^\s*//" | ${SORTED} | grep  -i "${SEARCH_TERM}"
-  exit
-elif [[ ${SHOW_AUTHORS} ]]
-then
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | awk '!x[$0]++' | ${SORTED} | grep -i "${SEARCH_TERM}"
+  if [[ ${SORTED} ]]
+  then
+    SORT_SUFFIX="sort"
+  else
+    SORT_SUFFIX="cat"
+  fi
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${FIRST_COMMAND} | ${SECOND_COMMAND} | ${SORT_SUFFIX} | grep -i "${SEARCH_TERM}"
   exit
 fi
 
@@ -122,11 +129,17 @@ get_count_by_popular () {
 }
 
 get_relevant_commit_data () {
+  if [[ ${SORTED} ]]
+  then
+    SORT_SUFFIX="sort"
+  else
+    SORT_SUFFIX="cat"
+  fi
   if [[ ${SHOW_COUNT} ]]
   then
     get_count_by_popular
   else
-    get_sorted_by_recent
+    get_sorted_by_recent | ${SORT_SUFFIX}
   fi
 }
 
