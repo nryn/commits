@@ -11,8 +11,13 @@ while (( "$#" )); do
       shift
       ;;
     -s|--search)
-      SEARCH_TERM=$2
-      shift 2
+      if [[ ${2} = "-"* ]]; then
+        SEARCH_TERM=""
+        shift 1
+      else
+        SEARCH_TERM=$2
+        shift 2
+      fi
       ;;
     -t|--type)
       SHOW_TYPE=true
@@ -107,7 +112,7 @@ then
   else
     SORT_SUFFIX="cat"
   fi
-  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${FIRST_COMMAND} | ${SECOND_COMMAND} | ${SORT_SUFFIX}
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${FIRST_COMMAND} | ${SECOND_COMMAND} | ${SORT_SUFFIX} | grep -i "${SEARCH_TERM}"
   exit
 fi
 
