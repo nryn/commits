@@ -23,6 +23,10 @@ while (( "$#" )); do
       SHOW_COUNT=true
       shift
       ;;
+    -az|--sort)
+      SORTED=true
+      shift
+      ;;
     -u|--authors)
       SHOW_AUTHORS=true
       shift
@@ -87,8 +91,9 @@ else
   CAPTURE_GROUP='\2'
 fi
 
-if [[ ${SHOW_AUTHORS} && ${SHOW_COUNT} ]]
+if [[ ${SHOW_AUTHORS} ]]
 then
+<<<<<<< Updated upstream
   git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | sort | uniq -c | sort -nr
   exit
 elif [[ ${SHOW_AUTHORS} && ${PREFIX} ]]
@@ -98,6 +103,28 @@ then
 elif [[ ${SHOW_AUTHORS} ]]
 then
   git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  "s/^\s*Co\-authored\-by\:\s*(.*)/\1/" | awk '!x[$0]++' | ${SORTED}
+=======
+  if [[ ${SHOW_COUNT} ]]
+  then
+    git log --since=${DATE_SINCE} | grep Co-authored-by: | ${GNU_COMMAND_PREFIX}sed -r  's/^\s*Co\-authored\-by\:\s*(.*)/\1/' | sort | uniq -c | sort -nr
+    exit
+  elif [[ ${PREFIX} ]]
+  then
+    FIRST_COMMAND='awk ''!x[$0]++'''
+    SECOND_COMMAND="${GNU_COMMAND_PREFIX}sed -r s/^\s*//"
+  else
+    FIRST_COMMAND="${GNU_COMMAND_PREFIX}sed -r  s/^\s*Co\-authored\-by\:\s*(.*)/\1/"
+    SECOND_COMMAND='awk ''!x[$0]++'''
+  fi
+
+  if [[ ${SORTED} ]]
+  then
+    SORT_SUFFIX="sort"
+  else
+    SORT_SUFFIX="cat"
+  fi
+  git log --since=${DATE_SINCE} | grep Co-authored-by: | ${FIRST_COMMAND} | ${SECOND_COMMAND} | ${SORT_SUFFIX}
+>>>>>>> Stashed changes
   exit
 fi
 
@@ -114,11 +141,17 @@ get_count_by_popular () {
 }
 
 get_relevant_commit_data () {
+  if [[ ${SORTED} ]]
+  then
+    SORT_SUFFIX="sort"
+  else
+    SORT_SUFFIX="cat"
+  fi
   if [[ ${SHOW_COUNT} ]]
   then
     get_count_by_popular
   else
-    get_sorted_by_recent
+    get_sorted_by_recent | ${SORT_SUFFIX}
   fi
 }
 
