@@ -52,7 +52,7 @@ Options:
 	-a, --all
 		Include all commits, rather than the default of 6 weeks.
 	-s, --search <string>
-		Filter results to match on the given string. Cannot be used with the -u | --authors flag.
+		Filter results to match on the given string.
 	-t, --types
 		Show a table of karma commit type usage.
 	-u, --authors
