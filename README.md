@@ -8,7 +8,7 @@ It can be used to display the scopes and types of the most recent commits, as we
 
 ## Installation
 
-To get set up, ensure you're in the root directory of this project.
+To get set up, ensure you're in the `src/` directory of this project. 
 
 Ensure the commits file is executable e.g. `chmod +x ./commits`
 
