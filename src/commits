@@ -19,6 +19,15 @@ while (( "$#" )); do
         shift 2
       fi
       ;;
+    --since)
+      if [[ ${2} = "-"* ]]; then
+        GIVEN_TIME_SINCE=""
+        shift 1
+      else
+        GIVEN_TIME_SINCE=$2
+        shift 2
+      fi
+      ;;
     -t|--type)
       SHOW_TYPE=true
       shift
@@ -66,7 +75,7 @@ eval set -- "${PARAMS}"
 
 if [[ ${SHOW_HELP} ]]
 then
-  echo -e "\nA tool to search karma commits and co-authors.\n\nUsage: commits [options]\nOptions:\n\n\t-a, --all\n\t\tInclude all commits, rather than the default of 6 weeks.\n\t-s, --search <string>\n\t\tFilter results to match on the given string. Cannot be used with the -u | --authors flag.\n\t-t, --types\n\t\tShow a table of karma commit type usage.\n\t-u, --authors\n\t\tShow a list of co-authors/contributors. Cannot be used with the -t | --type flag.\n\t-p, --prefix\n\t\tMay only be used in conjunction with the -u | --authors flag. Will print authors with a \"Co-authored-by:\" prefix.\n\t-c, --count\n\t\tPrints results with usage counts. Will override usage of the -p | --prefix flag when used alongside -u | --authors.\n\t-az, --sort\n\t\tAlphabetically sort results. Without this the results are sorted by the most recent, descending.\n"
+  echo -e "\nA tool to search karma commits and co-authors.\n\nUsage: commits [options]\nOptions:\n\n\t-a, --all\n\t\tInclude all commits, rather than the default of 6 weeks. Overrides the --since flag.\n\t-s, --search <string>\n\t\tFilter results to match on the given string. Cannot be used with the -u | --authors flag.\n\t-t, --types\n\t\tShow a table of karma commit type usage.\n\t-u, --authors\n\t\tShow a list of co-authors/contributors. Cannot be used with the -t | --type flag.\n\t-p, --prefix\n\t\tMay only be used in conjunction with the -u | --authors flag. Will print authors with a \"Co-authored-by:\" prefix.\n\t-c, --count\n\t\tPrints results with usage counts. Will override usage of the -p | --prefix flag when used alongside -u | --authors.\n\t-az, --sort\n\t\tAlphabetically sort results. Without this the results are sorted by the most recent, descending.\n\t--since <string>\n\t\tOnly show data since a given date. Can get precision down to the second. e.g '2018-03-01', '2019-03-01T12:15:00-07:00', or '1519906585'. Spaces in the date are not supported. The -a | --all flag overrides this flag.\n"
   exit
 fi
 
@@ -80,6 +89,9 @@ fi
 if [[ ${SHOW_ALL} ]]
 then
   DATE_SINCE='1970-01-01'
+elif [[ -n ${GIVEN_TIME_SINCE} ]]
+then
+  DATE_SINCE=${GIVEN_TIME_SINCE}
 else
   FORTY_TWO_DAYS_IN_SECONDS=$(($(${GNU_COMMAND_PREFIX}date +%s)-$(${GNU_COMMAND_PREFIX}date +%s --date "42 days ago")))
   MOST_RECENT_COMMIT_DATE=$(git log -1 --date=short --pretty=format:%cd)
