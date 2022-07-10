@@ -14,6 +14,17 @@ Ensure the commits file is executable e.g. `chmod +x ./commits`
 
 Ensure the commits file is in the PATH e.g. to add the project root to the path `export PATH=$PATH:$(pwd)`
 
+### For Mac users
+
+For commits to work properly on OS X or macOS, you must install GNU versions of `sed` (as `gsed`) and `date` (as `gdate`). 
+Homebrew users can do this simply by running:
+
+```
+$ brew install core-utils gnu-sed
+```
+
+You should now be ready to use commits on Mac.
+
 ## Usage
 
 `commits` will only work in git repositories.
